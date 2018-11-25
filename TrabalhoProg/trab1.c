@@ -10,7 +10,6 @@
 void lerArquivo (FILE *arquivo, int linhaDesejada)
 {
 	rewind(arquivo);
-
 	int linhas = 1;
 	char caracter;
 
@@ -26,9 +25,7 @@ void lerArquivo (FILE *arquivo, int linhaDesejada)
 int obterNumeroCaracteres(FILE *arquivo, int linhaDesejada)
 {
 	rewind(arquivo);
-
-	int linhas = 0;
-	int caracteres = 0;
+	int linhas = 0, caracteres = 0;
 	char caracter;
 	
 	while (linhas != linhaDesejada)
@@ -36,8 +33,7 @@ int obterNumeroCaracteres(FILE *arquivo, int linhaDesejada)
 		fscanf(arquivo, "%c", &caracter);
 		
 		if (caracter == '\n') {linhas++;}
-
-		if (linhas == linhaDesejada - 1 && caracter != '\n') {caracteres++;}
+		else if (linhas == linhaDesejada - 1) {caracteres++;}
 	}
 	
 	return caracteres;
@@ -47,7 +43,6 @@ int obterNumeroCaracteres(FILE *arquivo, int linhaDesejada)
 void infoArquivo(FILE *arquivo, int *linhas, int *dados)
 {
 	rewind(arquivo);
-	
 	char caracter;
         int iniciaDado = 0;
 	
@@ -58,22 +53,17 @@ void infoArquivo(FILE *arquivo, int *linhas, int *dados)
 			fscanf(arquivo, "%c", &caracter);
 		
 			if (caracter == '\n') {*linhas = *linhas + 1;}
-		}
-	}
-
+		}}
 	else {
 		while (!feof(arquivo))
 		{
 			fscanf(arquivo, "%c", &caracter);
 		
 			//Conta quantidade de dados por linha
-			if (caracter != ' ' && caracter != '\n' && caracter != ',' && iniciaDado != 1) {iniciaDado = 1;}
-		
-			if (*linhas == 0) {if ((caracter == ',' || caracter == '\n') && iniciaDado == 1) {*dados = *dados + 1; iniciaDado = 0;}}
-
+			if (caracter != ' ') {if (caracter != '\n') {if (caracter != ',') {if (iniciaDado != 1) {iniciaDado = 1;}}}}
+			if (*linhas == 0) {if (caracter == ',' || caracter == '\n') {if (iniciaDado == 1) {*dados = *dados + 1; iniciaDado = 0;}}}
 			if (caracter == '\n') {*linhas = *linhas + 1;}
-		}
-	}
+		}}
 
 	*linhas = *linhas - 1;
 }
@@ -82,7 +72,6 @@ void infoArquivo(FILE *arquivo, int *linhas, int *dados)
 float ** alocaMatrizFloat(int *linhas, int *colunas)
 {
 	float **matriz;
-
 	int i;
 	
 	matriz = (float **) malloc (*linhas * sizeof(float *));
@@ -112,31 +101,25 @@ void freeMatrizFloat(float **matriz, int *linhas)
 float ** obterMatriz(FILE *arquivo, int *linhas, int *colunas, int linhaDesejada)
 {
 	float **matriz;
-
 	FILE *arquivoAux;
 	
 	//Obtendo o tamanho do endereço de teste
 	int tamanhoString = obterNumeroCaracteres(arquivo, linhaDesejada);
-
 	tamanhoString = tamanhoString + 1;
+	char stringComplemento[tamanhoString];
 
 	//Chegando na linha desejada
 	lerArquivo(arquivo, linhaDesejada);
 	
-	//Obtendo a string do endereço de teste
-	char stringComplemento[tamanhoString];
-	
+	//Obtendo a string do endereço de teste	
 	fgets(stringComplemento, tamanhoString, arquivo);
 	
-	//Acessando o arquivo para obter os valores
+	//Acessando o arquivo para obter os valores e apurando sua abertura
 	arquivoAux = fopen(stringComplemento, "r");
-	
-		//Apurar a abertura do arquivo
-    		if (arquivoAux == NULL) {printf("Erro na abertura do arquivo auxiliar(obterMatriz).\n"); exit(1);}
+    	if (arquivoAux == NULL) {printf("Erro na abertura do arquivo auxiliar(obterMatriz).\n"); exit(1);}
 	
 	//Analisando as propriedades do arquivo
 	infoArquivo(arquivoAux, linhas, colunas);
-	
 	rewind(arquivoAux);
 
 	//Alocando a matriz
@@ -162,10 +145,9 @@ float ** obterMatriz(FILE *arquivo, int *linhas, int *colunas, int linhaDesejada
 //Função para alocar dinamicamente a matriz resultante, com as distâncias e os rótulos em vetores
 float *** alocaResultante(int *linhasEntrada, int *linhasComparar)
 {
-	float ***matriz;
-	
 	int i, j;
-	
+	float ***matriz;
+
 	matriz = (float ***) malloc (*linhasEntrada * sizeof(float **));
 	
 	for (i = 0; i < *linhasEntrada; i++)
@@ -206,7 +188,6 @@ void freeResultante(float ***matriz, int *linhas, int *colunas)
 void distEuc(float **matrizEntrada, float **matrizComparar, float ***matrizResultante, int *linhasEntrada, int *colunasEntrada, int *linhasComparar)
 {
 	int i, j, k;
-	
 	float dist = 0, diferenca;
 	
 	for (i = 0; i < *linhasEntrada; i++)
@@ -217,16 +198,13 @@ void distEuc(float **matrizEntrada, float **matrizComparar, float ***matrizResul
 			{
 				//Cálculo da distância
 				diferenca = matrizEntrada[i][k] - matrizComparar[j][k];
-
 				dist = (diferenca * diferenca) + dist;
 			}
 		
-			//Inserindo o valor da distância
+			//Inserindo o valor da distância e rótulo
 			matrizResultante[i][j][0] = sqrt(dist);
-			
-			//Inserindo o valor do rótulo
 			matrizResultante[i][j][1] = matrizComparar[j][(*colunasEntrada) - 1];
-	
+
 			dist = 0;	
 		}
 	}
@@ -236,7 +214,6 @@ void distEuc(float **matrizEntrada, float **matrizComparar, float ***matrizResul
 void distMink(float **matrizEntrada, float **matrizComparar, float ***matrizResultante, int *linhasEntrada, int *colunasEntrada, int *linhasComparar, float valorRaio)
 {
 	int i, j, k;
-
 	float dist, valor, valorFinalRaio = 1/valorRaio;
 
 	for (i = 0; i < *linhasEntrada; i++)
@@ -248,18 +225,14 @@ void distMink(float **matrizEntrada, float **matrizComparar, float ***matrizResu
 
 			for (k = 0; k < (*colunasEntrada) - 1; k++)
 			{
-				//Cálculo do valor absoluto
+				//Cálculo do valor absoluto e distância
 				if (matrizEntrada[i][k] > matrizComparar[j][k]) {valor = (matrizEntrada[i][k] - matrizComparar[j][k]);}
 				else {valor = (matrizComparar[j][k] - matrizEntrada[i][k]);}
-	
-				//Cálculo da distância
 				dist = (pow(valor, valorRaio)) + dist;
 			}
 		
-			//Inserindo o valor da distância
+			//Inserindo o valor da distância e rótulo
 			matrizResultante[i][j][0] = (pow(dist, valorFinalRaio));
-			
-			//Inserindo o valor do rótulo
 			matrizResultante[i][j][1] = matrizComparar[j][(*colunasEntrada) - 1];	
 		}
 	}
@@ -269,7 +242,6 @@ void distMink(float **matrizEntrada, float **matrizComparar, float ***matrizResu
 void distCheby(float **matrizEntrada, float **matrizComparar, float ***matrizResultante, int *linhasEntrada, int *colunasEntrada, int *linhasComparar)
 {
 	int i, j, k;
-
 	float maiorValor, valor;
 
 	for (i = 0; i < *linhasEntrada; i++)
@@ -280,17 +252,14 @@ void distCheby(float **matrizEntrada, float **matrizComparar, float ***matrizRes
 
 			for (k = 0; k < (*colunasEntrada - 1); k++)
 			{
-				//Cálculo do valor absoluto
+				//Cálculo do valor absoluto e maior valor obtido
 				if (matrizEntrada[i][k] > matrizComparar[j][k]) {valor = (matrizEntrada[i][k] - matrizComparar[j][k]);}
 				else {valor = (matrizComparar[j][k] - matrizEntrada[i][k]);}
-
 				if (valor > maiorValor) {maiorValor = valor;}
 			}
 		
-			//Inserindo o valor da maior distância
+			//Inserindo o valor da maior distância e rótulo
 			matrizResultante[i][j][0] = maiorValor;
-			
-			//Inserindo o valor do rótulo
 			matrizResultante[i][j][1] = matrizComparar[j][(*colunasEntrada) - 1];
 		}
 	}
@@ -300,7 +269,6 @@ void distCheby(float **matrizEntrada, float **matrizComparar, float ***matrizRes
 void ordenaResultante(float ***matrizResultante, int *linhasEntrada, int *linhasComparar)
 {
 	int i, j, k, sinal, troca;
-
 	float distancia, rotulo;
 
 	//Bubble Sort
@@ -316,14 +284,13 @@ void ordenaResultante(float ***matrizResultante, int *linhasEntrada, int *linhas
 			for (j = 0; j < k; j++)
 			{ 
 				if (matrizResultante[i][j][0] > matrizResultante[i][j + 1][0]) {
-				 troca = 1;
-				 distancia = matrizResultante[i][j][0]; 
-				 rotulo = matrizResultante[i][j][1]; 
-				 matrizResultante[i][j][0] = matrizResultante[i][j + 1][0]; 
-				 matrizResultante[i][j][1] = matrizResultante[i][j + 1][1];
-				 matrizResultante[i][j + 1][0] = distancia;
-				 matrizResultante[i][j + 1][1] = rotulo;
-				}
+					troca = 1;
+					distancia = matrizResultante[i][j][0]; 
+					rotulo = matrizResultante[i][j][1]; 
+					matrizResultante[i][j][0] = matrizResultante[i][j + 1][0]; 
+					matrizResultante[i][j][1] = matrizResultante[i][j + 1][1];
+					matrizResultante[i][j + 1][0] = distancia;
+				 	matrizResultante[i][j + 1][1] = rotulo;}
 			}
 
 			if (troca == 0) {sinal = 1;}		
@@ -335,7 +302,6 @@ void ordenaResultante(float ***matrizResultante, int *linhasEntrada, int *linhas
 int ** alocaMatrizInt(int *linhas, int *colunas)
 {
 	int **matriz, i;
-	
 	matriz = (int **) malloc (*linhas * sizeof(int *));
 	
 	for (i = 0; i < *linhas; i++)
@@ -362,11 +328,8 @@ void freeMatrizInt(int **matriz, int *linhas)
 //Função para retirar os 'K' valores mais próximos
 int ** retirarProximos(int *K, float ***matrizResultante, int *linhasEntrada)
 {
-	int **matrizFinal;
-
+	int **matrizFinal, i, j, k;
 	matrizFinal = alocaMatrizInt(linhasEntrada, K);
-
-	int i, j, k;
  
 	for (i = 0; i < *linhasEntrada; i++)
 	{
@@ -383,15 +346,11 @@ int ** retirarProximos(int *K, float ***matrizResultante, int *linhasEntrada)
 int * escolhaRotulo (int **matrizFinal, int *K, int *linhasEntrada)
 {
 	int *vetor, i, j, k;
-
-	//Alocando um vetor para os valores de K de cada amostra do teste
 	vetor = (int *) malloc (*linhasEntrada * sizeof(int));
 
 	//Decidindo o valor de K
 		//Vetor com duas posições, uma para o nº de repetições e outra para a posição do valor
-	int decisao[2]; 
-
-	int nRepeticoes;
+	int decisao[2], nRepeticoes; 
 
 	for (i = 0; i < *linhasEntrada; i++)
 	{
@@ -418,10 +377,8 @@ int * escolhaRotulo (int **matrizFinal, int *K, int *linhasEntrada)
 //Função para obter a matriz de confusão
 int ** matrizConfusao(int *vetorKValores, float **matrizTeste, int *linhasTeste, int *colunasTeste, int *dimensoesConf, float *acuracia)
 {
-	int quantidadeRotulos, i, j, k; 
-	
+	int quantidadeRotulos, i, j, k, acertos, erros, recebeValor, **matrizConf; 
 	*dimensoesConf = -1;
-
 	*acuracia = 0;
 
 	//Obtendo a quantidade de rotulos
@@ -430,28 +387,20 @@ int ** matrizConfusao(int *vetorKValores, float **matrizTeste, int *linhasTeste,
 		if (matrizTeste[i][(*colunasTeste) - 1] > *dimensoesConf) {*dimensoesConf = matrizTeste[i][(*colunasTeste) - 1];}
 	}
 
-	int **matrizConf;
-
-	//Alocando a matriz de confusão
-	matrizConf = alocaMatrizInt(dimensoesConf, dimensoesConf);
-
 	//Obtendo a matriz de confusão
-	int acertos, erros;
-
-	int recebeValor;
+	matrizConf = alocaMatrizInt(dimensoesConf, dimensoesConf);
 
 	for (i = 0; i < *dimensoesConf; i++)
 	{
 		for (j = 0; j < *dimensoesConf; j++)
 		{
 			acertos = 0;
-
 			erros = 0;
 
 			for (k = 0; k < *linhasTeste; k++)
 			{
-				if (i == j) {if (matrizTeste[k][(*colunasTeste) - 1] == vetorKValores[k] && vetorKValores[k] == (i+1)) {acertos++;}}
-				else if (matrizTeste[k][(*colunasTeste) - 1] == (i+1) && vetorKValores[k] == (j+1) && vetorKValores[k] != matrizTeste[k][(*colunasTeste) - 1]) {erros++;}
+				if (i == j) {if (matrizTeste[k][(*colunasTeste) - 1] == vetorKValores[k]) {if (vetorKValores[k] == (i+1)) {acertos++;}}}
+				else if (matrizTeste[k][(*colunasTeste) - 1] == (i+1)) {if (vetorKValores[k] == (j+1)) {if (vetorKValores[k] != matrizTeste[k][(*colunasTeste) - 1]) {erros++;}}}
 			}
 			
 			if (i == j) {matrizConf[i][j] = acertos; *acuracia = acertos + *acuracia;}
@@ -460,7 +409,6 @@ int ** matrizConfusao(int *vetorKValores, float **matrizTeste, int *linhasTeste,
 	}	
 
 	*acuracia = ((*acuracia)/(*linhasTeste));
-
 	return matrizConf;
 }
 
@@ -468,10 +416,9 @@ int ** matrizConfusao(int *vetorKValores, float **matrizTeste, int *linhasTeste,
 void criarArquivo(char *endereco, int numero, float acuracia, int **matrizConf, int dimensoesConf, int *vetorKValores, int *linhasTeste)
 {
 	FILE *arquivoAux;
-
-	//Transformando o numero em uma string
 	int tamanho = 0, auxiliar = numero;
 
+	//Transformando o número em uma string
 	while (auxiliar > 0)
 	{
 		auxiliar = auxiliar/10;
@@ -479,15 +426,11 @@ void criarArquivo(char *endereco, int numero, float acuracia, int **matrizConf, 
 	}
 
 	char num[tamanho], complemento[] = ".txt";
-
 	sprintf(num, "%i", numero);
-
 	char local[strlen(endereco) + strlen(complemento) + tamanho];
 
 	strcpy(local, endereco);
-
 	strcat(local, num);
-
 	strcat(local, complemento);
 
 	//Criando o arquivo para escrita
@@ -527,10 +470,8 @@ void criarArquivo(char *endereco, int numero, float acuracia, int **matrizConf, 
 //Função para realizar os cálculos conforme requisitado no config e escrever os resultados nos arquivos "resposta"
 void realizarOperacoes(FILE *arquivo, float **matrizTeste, int *linhasTeste, int *colunasTeste, float **matrizTreino, int *linhasTreino, int *colunasTreino, float ***matrizResultante, char *endereco)
 {
-	int **matrizFinal, *vetorKValores, i, K, linhasConfig, **matrizConf, dimensoesConf, anularContagemColunas = -1;
-
+	int **matrizFinal, *vetorKValores, i, K, linhasConfig = 0, **matrizConf, dimensoesConf, anularContagemColunas = -1;
 	char caracter;
-
 	float raio, acuracia;
 
 	//Obter a quantidade de linhas do config
@@ -544,11 +485,9 @@ void realizarOperacoes(FILE *arquivo, float **matrizTeste, int *linhasTeste, int
 		//Obtendo os dados
 		fscanf(arquivo, "%i, %c,", &K, &caracter);
 
-		//Verificando a distância desejada e calculando-a
+		//Verificando a distância desejada
 		if (caracter == 'M') {fscanf(arquivo, "%f", &raio); distMink(matrizTeste, matrizTreino, matrizResultante, linhasTeste, colunasTeste, linhasTreino, raio);}
-
 		else if (caracter == 'E') {distEuc(matrizTeste, matrizTreino, matrizResultante, linhasTeste, colunasTeste, linhasTreino);}
-
 		     else {distCheby(matrizTeste, matrizTreino, matrizResultante, linhasTeste, colunasTeste, linhasTreino);}
 
 		//Ordenando a matriz resultante
@@ -568,9 +507,7 @@ void realizarOperacoes(FILE *arquivo, float **matrizTeste, int *linhasTeste, int
 
 		//Dando free nas matrizes e vetores usados
 		freeMatrizInt(matrizFinal, linhasTeste);
-
 		free(vetorKValores);	
-
 		freeMatrizInt(matrizConf, &dimensoesConf);
 	}
 }
@@ -579,21 +516,15 @@ void realizarOperacoes(FILE *arquivo, float **matrizTeste, int *linhasTeste, int
 int main()
 {
 	float **matrizTeste, **matrizTreino, ***matrizResultante; 
-
 	int linhasTeste = 0, colunasTeste = 0, linhasTreino = 0, colunasTreino = 0;
-
 	FILE *arquivo1;
 
-	//Abrir o config
+	//Abrir o config e apurar sua abertura
 	arquivo1 = fopen("config.txt", "r");
-
-	//Apurar a abertura do arquivo
     	if (arquivo1 == NULL) {printf("Erro na abertura do arquivo(Main).\n"); exit(1);}
 
-	//Obtendo a matriz de teste
+	//Obtendo as matrizes de entrada
 	matrizTeste = obterMatriz(arquivo1, &linhasTeste, &colunasTeste, 2);
-
-	//Obtendo a matriz de treino
 	matrizTreino = obterMatriz(arquivo1, &linhasTreino, &colunasTreino, 1);
 
 	//Alocando a resultante
@@ -601,11 +532,8 @@ int main()
 
 	//Obter o endereço para a criação dos arquivos na função realizarOperacoes
 		int tamanhoEndereco; 
-
 		tamanhoEndereco = (obterNumeroCaracteres(arquivo1, 3) + 1);
-
 		char result[] = "predicao_";
-
 		char endereco[tamanhoEndereco + strlen(result)];
 
 			//Chegando até a terceira linha
@@ -613,20 +541,15 @@ int main()
 
 			//Obtendo o endereco pelo config
 		fgets(endereco, tamanhoEndereco, arquivo1);
-
 		strcat(endereco, result);
 
-	//Fazendo as operações desejadas
+	//Fazendo as operações desejadase criando as predições
 	realizarOperacoes(arquivo1, matrizTeste, &linhasTeste, &colunasTeste, matrizTreino, &linhasTreino, &colunasTreino, matrizResultante, endereco);
 
-	//Dando free nas matrizes
+	//Dando free nas matrizes e fechando o arquivo
 	freeMatrizFloat(matrizTeste, &linhasTeste);
-
 	freeMatrizFloat(matrizTreino, &linhasTreino);
-
 	freeResultante(matrizResultante, &linhasTeste, &linhasTreino);
-
-	//Fechando o arquivo
 	fclose(arquivo1);
 }
 
